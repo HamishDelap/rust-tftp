@@ -14,7 +14,7 @@ enum AppMode {
 // TFTP server
 // - Reads from the server
 // - Server on port 2000
-// - Client on port 2001
+// - Client on random port between 2000-2500
 
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();

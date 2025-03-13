@@ -1,10 +1,6 @@
 
-use crate::tftp_protocol;
-
-use std::fs::{File, OpenOptions};
-use std::net::UdpSocket;
-
 pub mod client {
+    use rand::Rng;
     use std::io::{Write};
     pub fn validate_input(args:Vec<String>) -> Option<String>{
         if args.len() == 3 {
@@ -14,8 +10,12 @@ pub mod client {
     }
 
     pub fn client_main(file_name: String) -> std::io::Result<()> {
-        let socket = std::net::UdpSocket::bind("127.0.0.1:2001")?;
-        
+        let mut rnd_generator = rand::rng(); 
+        let client_addr = std::net::SocketAddr::from(([127, 0, 0, 1], rnd_generator.random_range(2001..2500)));
+        let socket = std::net::UdpSocket::bind(client_addr)?;
+
+        println!("Bound socket to address: {}", client_addr);
+
         let read_request = crate::tftp_protocol::tftp::ReadRequest {
             filename: file_name.clone(),
             mode: String::from("octet")
@@ -25,7 +25,7 @@ pub mod client {
         println!("Requested file {}", file_name);
 
         let mut process_messages = true;
-        while (process_messages) {
+        while process_messages {
             match recv_data(file_name.clone(), &socket) {
                 Ok(result) => process_messages = result,
                 Err(e) => eprintln!("Error: {}", e)
@@ -59,7 +59,7 @@ pub mod client {
     fn recv_data(filename: String, socket: &std::net::UdpSocket) -> std::io::Result<bool> {
         println!("Receiving DATA");
         let mut buffer : [u8; 1024]= [0; 1024];
-        let (number_of_bytes, src_addr) = socket.recv_from(&mut buffer).expect("Didn't receive data");
+        let (number_of_bytes, _src_addr) = socket.recv_from(&mut buffer).expect("Didn't receive data");
         let filled_buf = &mut buffer[..number_of_bytes];
                 
         let block_number_bytes: [u8; 2] = [filled_buf[2], filled_buf[3]];
