@@ -2,6 +2,7 @@
 pub mod client {
     use rand::Rng;
     use std::io::{Write};
+   
     pub fn validate_input(args:Vec<String>) -> Option<String>{
         if args.len() == 3 {
             return Some(args[2].clone()); 
